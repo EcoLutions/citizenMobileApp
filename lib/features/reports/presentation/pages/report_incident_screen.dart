@@ -6,12 +6,10 @@ import 'package:citizen_mobile_app/features/reports/presentation/blocs/report_st
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:citizen_mobile_app/core/di/injection_container.dart' as di;
-
 import '../../../../core/theme/text_style_paletter.dart';
 
 class ReportIncidentScreen extends StatelessWidget {
   const ReportIncidentScreen({super.key});
-
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
@@ -89,7 +87,6 @@ class ReportIncidentScreen extends StatelessWidget {
       ),
     );
   }
-
   Widget _buildTypeSelector(BuildContext context, String currentType) {
     final types = [
       "Contenedor Lleno",
@@ -128,7 +125,6 @@ class ReportIncidentScreen extends StatelessWidget {
       ),
     );
   }
-
   Widget _buildPhotoGrid(BuildContext context, List<File> photos) {
     return GridView.builder(
       shrinkWrap: true,
