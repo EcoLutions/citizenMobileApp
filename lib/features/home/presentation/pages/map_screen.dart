@@ -64,13 +64,13 @@ class _MapScreenState extends State<MapScreen> {
             );
 
           return GoogleMap(
+            padding: const EdgeInsets.only(bottom: 90.0, top: 120.0),
             initialCameraPosition: const CameraPosition(
               target: LatLng(-12.085, -77.02),
               zoom: 15,
             ),
             onMapCreated: (controller) {
               _mapController = controller;
-              _mapController?.setMapStyle(_darkMapStyle);
             },
             markers: allMarkers,
             polylines: state.polylines,
