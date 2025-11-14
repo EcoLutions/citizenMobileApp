@@ -1,16 +1,15 @@
 import 'package:citizen_mobile_app/core/theme/color_paletter.dart';
 import 'package:citizen_mobile_app/features/home/presentation/blocs/home_bloc.dart';
 import 'package:citizen_mobile_app/features/home/presentation/blocs/home_event.dart';
-import 'package:citizen_mobile_app/features/notifications/domain/entities/notification.dart';
+import 'package:citizen_mobile_app/features/notifications/domain/entities/notification.dart'
+as app_notification; // Renombrado para evitar conflicto
 import 'package:citizen_mobile_app/features/notifications/presentation/blocs/notification_bloc.dart';
 import 'package:citizen_mobile_app/features/notifications/presentation/blocs/notification_event.dart';
 import 'package:citizen_mobile_app/features/notifications/presentation/blocs/notification_state.dart';
-import 'package:flutter/cupertino.dart' hide Notification;
-import 'package:flutter/material.dart' hide Notification;
+import 'package:flutter/material.dart'; // Importación normal
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:citizen_mobile_app/core/di/injection_container.dart' as di;
 import 'package:permission_handler/permission_handler.dart';
-
 
 class NotificationScreen extends StatelessWidget {
   const NotificationScreen({super.key});
@@ -29,9 +28,10 @@ class NotificationScreen extends StatelessWidget {
             maxChildSize: 0.85,
             builder: (_, controller) {
               return Container(
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   color: ColorPaletter.cardDark,
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                  borderRadius:
+                  BorderRadius.vertical(top: Radius.circular(20)),
                 ),
                 child: Column(
                   children: [
@@ -41,7 +41,7 @@ class NotificationScreen extends StatelessWidget {
                         width: 40,
                         height: 5,
                         decoration: BoxDecoration(
-                          color: Colors.grey[600],
+                          color: ColorPaletter.cardLight,
                           borderRadius: BorderRadius.circular(10),
                         ),
                       ),
@@ -50,13 +50,19 @@ class NotificationScreen extends StatelessWidget {
                       child: BlocBuilder<NotificationBloc, NotificationState>(
                         builder: (context, state) {
                           if (state is NotificationLoading) {
-                            return const Center(child: CircularProgressIndicator());
+                            return const Center(
+                                child: CircularProgressIndicator());
                           }
                           if (state is NotificationLoaded) {
-                            return _buildNotificationsList(context, controller, state.notifications, state.permissionStatus);
+                            return _buildNotificationsList(
+                                context,
+                                controller,
+                                state.notifications,
+                                state.permissionStatus);
                           }
                           if (state is NotificationEmpty) {
-                            return _buildNotificationsList(context, controller, [], state.permissionStatus);
+                            return _buildNotificationsList(
+                                context, controller, [], state.permissionStatus);
                           }
                           if (state is NotificationError) {
                             return Center(child: Text(state.message));
@@ -75,64 +81,73 @@ class NotificationScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildNotificationsList(BuildContext context, ScrollController controller, List<Notification> notifications, PermissionStatus permissionStatus) {
-    if (notifications.isEmpty) {
-      return Column(
-        children: [
-          _Header(permissionStatus: permissionStatus),
-          Expanded(child: _buildEmptyState()),
-        ],
-      );
-    }
-
-    return ListView.builder(
+  Widget _buildNotificationsList(
+      BuildContext context,
+      ScrollController controller,
+      List<app_notification.Notification> notifications,
+      PermissionStatus permissionStatus) {
+    return CustomScrollView(
       controller: controller,
-      itemCount: notifications.length + 1,
-      itemBuilder: (context, index) {
-        if (index == 0) return _Header(permissionStatus: permissionStatus);
-        return _buildNotificationCard(context, notifications[index - 1]);
-      },
+      slivers: [
+        SliverToBoxAdapter(child: _Header(permissionStatus: permissionStatus)),
+        if (notifications.isEmpty)
+          SliverFillRemaining(child: _buildEmptyState(context))
+        else
+          SliverList(
+            delegate: SliverChildBuilderDelegate(
+                  (context, index) => _buildNotificationCard(context, notifications[index]),
+              childCount: notifications.length,
+            ),
+          ),
+      ],
     );
   }
 
-  Widget _buildNotificationCard(BuildContext context, Notification notification) {
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      color: ColorPaletter.backgroundDark,
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: ColorPaletter.primary.withOpacity(0.1),
-          child: const Icon(Icons.notifications, color: ColorPaletter.primary),
-        ),
-        title: Text(notification.title, style: const TextStyle(fontWeight: FontWeight.bold, color: ColorPaletter.textWhite)),
-        subtitle: Text(notification.body, style: const TextStyle(color: ColorPaletter.textGrey)),
-        trailing: IconButton(
-          icon: const Icon(Icons.close, size: 20, color: ColorPaletter.textGrey),
-          onPressed: () {
-            context.read<NotificationBloc>().add(DismissNotification(notification.id));
-          },
-        ),
-      ),
-    );
-  }
-
-  Widget _buildEmptyState() {
+  Widget _buildEmptyState(BuildContext context) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(Icons.notifications_off_outlined, size: 80, color: Colors.grey[600]),
           const SizedBox(height: 16),
-          const Text(
+          Text(
             'No tienes notificaciones nuevas',
-            style: TextStyle(fontSize: 18, color: ColorPaletter.textGrey),
+            style: Theme.of(context).textTheme.titleMedium,
           ),
         ],
       ),
     );
   }
-}
+
+  }
+
+  Widget _buildNotificationCard(
+      BuildContext context, app_notification.Notification notification) {
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      color: ColorPaletter.cardLight,
+      child: ListTile(
+        leading: CircleAvatar(
+          backgroundColor: ColorPaletter.primary.withOpacity(0.1),
+          child: const Icon(Icons.notifications_active_outlined,
+              color: ColorPaletter.primary),
+        ),
+        title: Text(notification.title,
+            style: Theme.of(context).textTheme.bodyLarge),
+        subtitle: Text(notification.body,
+            style: Theme.of(context).textTheme.bodySmall),
+        trailing: IconButton(
+          icon: const Icon(Icons.close,
+              size: 20, color: ColorPaletter.textGrey),
+          onPressed: () {
+            context
+                .read<NotificationBloc>()
+                .add(DismissNotification(notification.id));
+          },
+        ),
+      ),
+    );
+  }
 
 class _Header extends StatelessWidget {
   final PermissionStatus permissionStatus;
@@ -140,7 +155,8 @@ class _Header extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bool areNotificationsEnabled = permissionStatus.isGranted || permissionStatus.isLimited;
+    final bool areNotificationsEnabled =
+        permissionStatus.isGranted || permissionStatus.isLimited;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
@@ -149,10 +165,12 @@ class _Header extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text("Notificaciones", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: ColorPaletter.textWhite)),
+              Text("Notificaciones",
+                  style: Theme.of(context).textTheme.headlineMedium),
               IconButton(
-                icon: const Icon(Icons.close, color: ColorPaletter.secondary,),
-                onPressed: () => context.read<HomeBloc>().add(ToggleNotifications()),
+                icon: const Icon(Icons.close, color: ColorPaletter.textGrey),
+                onPressed: () =>
+                    context.read<HomeBloc>().add(ToggleNotifications()),
               ),
             ],
           ),
@@ -161,14 +179,17 @@ class _Header extends StatelessWidget {
               padding: const EdgeInsets.only(top: 8.0),
               child: TextButton.icon(
                 style: TextButton.styleFrom(
-                    foregroundColor: ColorPaletter.levelMedium,
-                    backgroundColor: ColorPaletter.levelMedium.withOpacity(0.1),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8)
-                ),
+                    foregroundColor: ColorPaletter.warning,
+                    backgroundColor: ColorPaletter.warning.withOpacity(0.1),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8)),
+                    padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 8)),
                 icon: const Icon(Icons.warning_amber_rounded, size: 20),
                 label: const Text("Activar notificaciones"),
-                onPressed: () => context.read<NotificationBloc>().add(OpenNotificationSettings()),
+                onPressed: () => context
+                    .read<NotificationBloc>()
+                    .add(OpenNotificationSettings()),
               ),
             ),
         ],

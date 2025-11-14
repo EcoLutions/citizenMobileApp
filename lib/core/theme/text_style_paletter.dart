@@ -5,7 +5,13 @@ class TextStylePaletter {
   static const TextStyle title = TextStyle(
     fontSize: 28,
     fontWeight: FontWeight.bold,
-    color: ColorPaletter.textColor,
+    color: ColorPaletter.textPrimary,
+  );
+
+  static const TextStyle headline = TextStyle(
+    fontSize: 22,
+    fontWeight: FontWeight.w600,
+    color: ColorPaletter.textPrimary,
   );
 
   static const TextStyle subtitle = TextStyle(
@@ -14,13 +20,31 @@ class TextStylePaletter {
     height: 1.5,
   );
 
+  static const TextStyle bodyLarge = TextStyle(
+      fontSize: 16,
+      color: ColorPaletter.textPrimary,
+      fontWeight: FontWeight.w500
+  );
+
+  static const TextStyle body = TextStyle(
+    fontSize: 16,
+    color: ColorPaletter.textPrimary,
+  );
+
+  static const TextStyle bodySmall = TextStyle(
+    fontSize: 14,
+    color: ColorPaletter.textSecondary,
+  );
+
   static const TextStyle button = TextStyle(
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: FontWeight.bold,
     color: ColorPaletter.white,
   );
-  static const TextStyle body = TextStyle(
-    fontSize: 16,
-    color: ColorPaletter.textColor,
+
+  static const TextStyle label = TextStyle(
+    fontSize: 14,
+    fontWeight: FontWeight.w500,
+    color: ColorPaletter.textGrey,
   );
 }

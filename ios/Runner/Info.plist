@@ -45,5 +45,9 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+    <string>Necesitamos acceso a la cámara para tomar fotos de evidencia para tu reporte.</string>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>Necesitamos acceso a tu galería para adjuntar fotos de evidencia a tu reporte.</string>
 </dict>
 </plist>

@@ -1,6 +1,5 @@
 import 'package:citizen_mobile_app/core/navigation/screens_routes.dart';
 import 'package:citizen_mobile_app/core/theme/color_paletter.dart';
-import 'package:citizen_mobile_app/core/theme/text_style_paletter.dart';
 import 'package:citizen_mobile_app/core/utils/url_launcher.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -10,6 +9,8 @@ class WelcomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -20,16 +21,16 @@ class WelcomeScreen extends StatelessWidget {
               const Spacer(),
               Image.asset('assets/images/welcome_illustration.png', height: 200),
               const SizedBox(height: 40),
-              const Text(
+              Text(
                 'Transformando la gestión de residuos urbanos',
                 textAlign: TextAlign.center,
-                style: TextStylePaletter.title,
+                style: textTheme.displayLarge,
               ),
               const SizedBox(height: 16),
-              const Text(
+              Text(
                 'Colabora, reporta y mantente informado sobre la recolección de basura en tu municipalidad.',
                 textAlign: TextAlign.center,
-                style: TextStylePaletter.subtitle,
+                style: textTheme.titleMedium,
               ),
               const Spacer(),
               Row(
@@ -49,24 +50,24 @@ class WelcomeScreen extends StatelessWidget {
                     height: 8,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: Colors.grey[600],
+                      color: ColorPaletter.cardLight,
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 24),
               ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: ColorPaletter.primary,
-                  minimumSize: const Size(double.infinity, 50),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
                 onPressed: () {
-                  Navigator.pushNamed(context, ScreensRoutes.municipalitySelection);
+                  Navigator.pushNamed(context, ScreensRoutes.signIn);
                 },
-                child: const Text('Continuar', style: TextStylePaletter.button),
+                child: const Text('Iniciar Sesión'),
+              ),
+              const SizedBox(height: 12),
+              OutlinedButton(
+                onPressed: () {
+                  Navigator.pushNamed(context, ScreensRoutes.signUp);
+                },
+                child: const Text('Crear Cuenta'),
               ),
               const SizedBox(height: 16),
               Padding(
@@ -74,21 +75,21 @@ class WelcomeScreen extends StatelessWidget {
                 child: RichText(
                   textAlign: TextAlign.center,
                   text: TextSpan(
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: ColorPaletter.textGrey,
-                      fontFamily: 'Roboto',
-                    ),
+                    style: textTheme.bodySmall?.copyWith(fontSize: 12),
                     children: [
-                      const TextSpan(text: 'Al unirte a nuestra aplicación, aceptas nuestro '),
+                      const TextSpan(
+                          text:
+                          'Al unirte a nuestra aplicación, aceptas nuestro '),
                       TextSpan(
                         text: 'Términos de uso',
                         style: const TextStyle(
                           decoration: TextDecoration.underline,
+                          color: ColorPaletter.primary,
                         ),
                         recognizer: TapGestureRecognizer()
                           ..onTap = () {
-                            launchUrlExternal('https://www.ejemplo.com/terminos');
+                            launchUrlExternal(
+                                'https://www.ejemplo.com/terminos');
                           },
                       ),
                       const TextSpan(text: ' y '),
@@ -96,10 +97,12 @@ class WelcomeScreen extends StatelessWidget {
                         text: 'Política de privacidad',
                         style: const TextStyle(
                           decoration: TextDecoration.underline,
+                          color: ColorPaletter.primary,
                         ),
                         recognizer: TapGestureRecognizer()
                           ..onTap = () {
-                            launchUrlExternal('https://www.ejemplo.com/privacidad');
+                            launchUrlExternal(
+                                'https://www.ejemplo.com/privacidad');
                           },
                       ),
                       const TextSpan(text: '.'),
