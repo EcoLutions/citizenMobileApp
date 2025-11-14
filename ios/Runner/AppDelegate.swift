@@ -8,6 +8,7 @@ import UIKit
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
     GeneratedPluginRegistrant.register(with: self)
+    GMSServices.provideAPIKey("AIzaSyBFdmIEB3BCnjPpk9TDfpqhJVrSLolMRCw")
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
   }
 }
