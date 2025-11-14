@@ -1,4 +1,6 @@
+import 'package:citizen_mobile_app/core/navigation/screens_routes.dart';
 import 'package:citizen_mobile_app/features/home/presentation/blocs/map_bloc.dart';
+import 'package:citizen_mobile_app/features/home/presentation/blocs/map_event.dart';
 import 'package:citizen_mobile_app/features/home/presentation/blocs/map_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -25,10 +27,23 @@ class _MapScreenState extends State<MapScreen> {
   Future<void> _loadMapStyle() async {
     _darkMapStyle = await rootBundle.loadString('assets/map_style.json');
   }
+
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<MapBloc, MapState>(
-      builder: (context, state) {
+    // CAMBIA DE BlocBuilder A BlocConsumer
+    return BlocConsumer<MapBloc, MapState>(
+      listener: (context, state) { // <-- AÑADE ESTE LISTENER
+        if (state is MapLoaded && state.navigateToContainerDetail != null) {
+          // Navega a la pantalla de detalle
+          Navigator.of(context).pushNamed(
+            ScreensRoutes.containerDetail,
+            arguments: state.navigateToContainerDetail,
+          );
+          // Limpia el trigger de navegación
+          context.read<MapBloc>().add(ClearNavigation());
+        }
+      },
+      builder: (context, state) { // <-- ESTE ES TU BUILDER EXISTENTE
         if (state is MapLoading || state is MapInitial) {
           return const Center(child: CircularProgressIndicator());
         }
@@ -59,6 +74,9 @@ class _MapScreenState extends State<MapScreen> {
             },
             markers: allMarkers,
             polylines: state.polylines,
+            onTap: (position) {
+              // Handle map tap if needed
+            },
           );
         }
         return const Center(child: CircularProgressIndicator());
