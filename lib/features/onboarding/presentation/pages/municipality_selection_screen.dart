@@ -49,17 +49,13 @@ class _MunicipalitySelectionScreenState
               jsonDecode(citizenJson) as Map<String, dynamic>;
               final citizen = Citizen.fromJson(citizenMap);
 
-              context.read<CitizenBloc>().add(UpdateCitizenRequested(
-                citizenId: citizen.id,
-                districtId: state.municipality.id,
-                firstName: citizen.firstName,
-                lastName: citizen.lastName,
-                email: citizen.email,
-                phoneNumber: citizen.phoneNumber,
-              ));
-
               Navigator.pushNamedAndRemoveUntil(
-                  context, ScreensRoutes.home, (route) => false);
+                  context, ScreensRoutes.citizenCreation, (route) => false,
+                  arguments: {
+                    'userId': userId,
+                    'districtId': state.municipality.id,
+                    'citizenId': citizen.id,
+                  });
             } else {
               Navigator.pushNamedAndRemoveUntil(
                   context, ScreensRoutes.citizenCreation, (route) => false,

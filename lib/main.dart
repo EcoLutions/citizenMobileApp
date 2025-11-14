@@ -179,6 +179,7 @@ class WasteTrackApp extends StatelessWidget {
             child: CitizenCreationScreen(
               userId: args['userId'],
               districtId: args['districtId'],
+              citizenId: args['citizenId'] as String?,
             ),
           );
         },

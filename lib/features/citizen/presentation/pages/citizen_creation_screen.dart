@@ -172,7 +172,7 @@ class _CitizenCreationScreenState extends State<CitizenCreationScreen> {
                                     email:
                                     _emailController.text.trim(),
                                     phoneNumber:
-                                    _phoneController.text.trim(),
+                                    "+51${_phoneController.text.trim()}",
                                   ),
                                 );
                               } else {
@@ -189,7 +189,7 @@ class _CitizenCreationScreenState extends State<CitizenCreationScreen> {
                                     email:
                                     _emailController.text.trim(),
                                     phoneNumber:
-                                    _phoneController.text.trim(),
+                                    "+51${_phoneController.text.trim()}",
                                   ),
                                 );
                               }
