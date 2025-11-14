@@ -1,3 +1,4 @@
+import 'package:citizen_mobile_app/features/auth/presentation/blocs/auth_bloc.dart';
 import 'package:citizen_mobile_app/features/home/presentation/blocs/home_bloc.dart';
 import 'package:citizen_mobile_app/features/home/presentation/blocs/home_event.dart';
 import 'package:citizen_mobile_app/features/home/presentation/blocs/home_state.dart';
@@ -20,6 +21,9 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
+        BlocProvider(
+          create: (_) => di.sl<AuthBloc>(),
+        ),
         BlocProvider(
           create: (_) => di.sl<HomeBloc>(),
         ),
