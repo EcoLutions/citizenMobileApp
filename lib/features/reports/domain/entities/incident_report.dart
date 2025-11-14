@@ -1,20 +1,33 @@
-import 'dart:io';
 import 'package:equatable/equatable.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:citizen_mobile_app/features/reports/domain/entities/report_type.dart';
 
 class IncidentReport extends Equatable {
-  final String type;
+  final String citizenId;
+  final double latitude;
+  final double longitude;
+  final String? containerId;
+  final ReportType reportType;
   final String description;
-  final LatLng location;
-  final List<File> photos;
+  final List<String> evidenceIds;
 
   const IncidentReport({
-    required this.type,
+    required this.citizenId,
+    required this.latitude,
+    required this.longitude,
+    this.containerId,
+    required this.reportType,
     required this.description,
-    required this.location,
-    this.photos = const [],
+    this.evidenceIds = const [],
   });
 
   @override
-  List<Object?> get props => [type, description, location, photos];
+  List<Object?> get props => [
+        citizenId,
+        latitude,
+        longitude,
+        containerId,
+        reportType,
+        description,
+        evidenceIds,
+      ];
 }

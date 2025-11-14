@@ -1,12 +1,18 @@
 import 'dart:io';
 import 'package:citizen_mobile_app/core/theme/color_paletter.dart';
+import 'package:citizen_mobile_app/features/reports/domain/entities/report_type.dart';
 import 'package:citizen_mobile_app/features/reports/presentation/blocs/report_bloc.dart';
 import 'package:citizen_mobile_app/features/reports/presentation/blocs/report_event.dart';
 import 'package:citizen_mobile_app/features/reports/presentation/blocs/report_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:citizen_mobile_app/core/di/injection_container.dart' as di;
+import 'package:geolocator/geolocator.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '../../../../core/theme/text_style_paletter.dart';
+import 'package:citizen_mobile_app/features/home/presentation/blocs/home_bloc.dart';
+import 'package:citizen_mobile_app/features/home/presentation/blocs/home_event.dart';
 
 class ReportIncidentScreen extends StatelessWidget {
   const ReportIncidentScreen({super.key});
@@ -21,65 +27,72 @@ class ReportIncidentScreen extends StatelessWidget {
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(
                   content: Text('Reporte enviado con éxito.'),
-                  backgroundColor: Colors.green,
+                  backgroundColor: ColorPaletter.success,
                 ),
               );
-              Navigator.of(context).pop();
+              context.read<HomeBloc>().add(Navigate(0));
+              context.read<ReportBloc>().add(ResetReportForm());
             }
             if (state.status == ReportStatus.error) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(state.errorMessage ?? 'Ocurrió un error.'),
-                  backgroundColor: Colors.red,
+                  backgroundColor: ColorPaletter.error,
                 ),
               );
             }
           },
           builder: (context, state) {
-            return SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(16, 120, 16, 100),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text('Tipo de incidencia', style: TextStylePaletter.subtitle),
-                  const SizedBox(height: 8),
-                  _buildTypeSelector(context, state.type),
-                  const SizedBox(height: 24),
-                  const Text('Descripción', style: TextStylePaletter.subtitle),
-                  const SizedBox(height: 8),
-                  TextField(
-                    decoration: InputDecoration(
-                      hintText: 'Describe el problema...',
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: BorderSide(color: ColorPaletter.primary),
+            return Scaffold(
+              body: SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(16, 120, 16, 100),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Tipo de incidencia',
+                        style: Theme.of(context).textTheme.headlineMedium),
+                    const SizedBox(height: 16),
+                    _buildTypeSelector(context, state.type),
+                    const SizedBox(height: 24),
+                    Text('Ubicación',
+                        style: Theme.of(context).textTheme.headlineMedium),
+                    const SizedBox(height: 16),
+                    _buildLocationSection(context, state),
+                    const SizedBox(height: 24),
+                    Text('Descripción',
+                        style: Theme.of(context).textTheme.headlineMedium),
+                    const SizedBox(height: 16),
+                    TextField(
+                      controller:
+                      TextEditingController(text: state.description),
+                      decoration: const InputDecoration(
+                        hintText: 'Describe el problema...',
                       ),
+                      maxLines: 4,
+                      onChanged: (value) {
+                        context
+                            .read<ReportBloc>()
+                            .add(DescriptionChanged(value));
+                      },
                     ),
-                    maxLines: 4,
-                    onChanged: (value) {
-                      context.read<ReportBloc>().add(DescriptionChanged(value));
-                    },
-                  ),
-                  const SizedBox(height: 24),
-                  const Text('Adjuntar Fotos (Opcional)', style: TextStylePaletter.subtitle),
-                  const SizedBox(height: 8),
-                  _buildPhotoGrid(context, state.photos),
-                  const SizedBox(height: 32),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: ColorPaletter.primary,
-                      minimumSize: const Size(double.infinity, 50),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    const SizedBox(height: 24),
+                    Text('Adjuntar Fotos (Opcional)',
+                        style: Theme.of(context).textTheme.headlineMedium),
+                    const SizedBox(height: 16),
+                    _buildPhotoGrid(context, state.photos),
+                    const SizedBox(height: 32),
+                    ElevatedButton(
+                      onPressed: state.isFormValid &&
+                          state.status != ReportStatus.submitting
+                          ? () =>
+                          context.read<ReportBloc>().add(SubmitReport())
+                          : null,
+                      child: state.status == ReportStatus.submitting
+                          ? const CircularProgressIndicator(color: Colors.white)
+                          : const Text('Enviar Reporte'),
                     ),
-                    onPressed: state.isFormValid && state.status != ReportStatus.submitting
-                        ? () => context.read<ReportBloc>().add(SubmitReport())
-                        : null,
-                    child: state.status == ReportStatus.submitting
-                        ? const CircularProgressIndicator(color: Colors.white)
-                        : const Text('Enviar Reporte', style: TextStylePaletter.button),
-                  ),
-                ],
+                  ],
+                ),
               ),
             );
           },
@@ -87,15 +100,9 @@ class ReportIncidentScreen extends StatelessWidget {
       ),
     );
   }
-  Widget _buildTypeSelector(BuildContext context, String currentType) {
-    final types = [
-      "Contenedor Lleno",
-      "Basura en la calle",
-      "Contenedor Dañado",
-      "Punto de Acopio Ilegal",
-      "Requiere Barrido",
-      "Otro"
-    ];
+
+  Widget _buildTypeSelector(BuildContext context, ReportType currentType) {
+    final types = ReportType.values;
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
@@ -105,7 +112,7 @@ class ReportIncidentScreen extends StatelessWidget {
           return Padding(
             padding: const EdgeInsets.only(right: 8.0),
             child: ChoiceChip(
-              label: Text(type),
+              label: Text(type.displayName),
               selected: isSelected,
               onSelected: (selected) {
                 if (selected) {
@@ -113,18 +120,114 @@ class ReportIncidentScreen extends StatelessWidget {
                 }
               },
               selectedColor: ColorPaletter.primary,
-              labelStyle: TextStyle(color: isSelected ? Colors.white : Theme.of(context).textTheme.bodyLarge?.color),
-              backgroundColor: ColorPaletter.textGrey,
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                  side: BorderSide(color: isSelected ? ColorPaletter.primary : Colors.grey)
+              backgroundColor: ColorPaletter.cardLight,
+              labelStyle: TextStyle(
+                  color: isSelected ? ColorPaletter.white : ColorPaletter.textPrimary,
+                  fontWeight: FontWeight.w600
               ),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  side: BorderSide(
+                      color: isSelected
+                          ? ColorPaletter.primary
+                          : Colors.transparent)),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             ),
           );
         }).toList(),
       ),
     );
   }
+
+  Widget _buildLocationSection(BuildContext context, ReportState state) {
+    return Column(
+      children: [
+        if (state.latitude != null && state.longitude != null)
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: ColorPaletter.success.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: ColorPaletter.success),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.location_on, color: ColorPaletter.success),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Ubicación: ${state.latitude!.toStringAsFixed(5)}, ${state.longitude!.toStringAsFixed(5)}',
+                    style: const TextStyle(color: ColorPaletter.success, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+            ),
+          )
+        else
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: ColorPaletter.warning.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: ColorPaletter.warning),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.warning_amber_rounded, color: ColorPaletter.warning),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'Ubicación requerida',
+                    style: const TextStyle(color: ColorPaletter.warning, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        const SizedBox(height: 12),
+        ElevatedButton.icon(
+          onPressed: () => _getCurrentLocation(context),
+          icon: const Icon(Icons.my_location),
+          label: const Text('Obtener ubicación actual'),
+          style: ElevatedButton.styleFrom(
+              backgroundColor: ColorPaletter.cardLight,
+              foregroundColor: ColorPaletter.textWhite
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _getCurrentLocation(BuildContext context) async {
+    try {
+      final permission = await Permission.location.request();
+      if (permission.isGranted) {
+        final position = await Geolocator.getCurrentPosition(
+          locationSettings: const LocationSettings(
+            accuracy: LocationAccuracy.high,
+          ),
+        );
+        context.read<ReportBloc>().add(
+          LocationChanged(position.latitude, position.longitude),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Permiso de ubicación denegado'),
+            backgroundColor: ColorPaletter.error,
+          ),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error obteniendo ubicación: $e'),
+          backgroundColor: ColorPaletter.error,
+        ),
+      );
+    }
+  }
+
   Widget _buildPhotoGrid(BuildContext context, List<File> photos) {
     return GridView.builder(
       shrinkWrap: true,
@@ -138,33 +241,77 @@ class ReportIncidentScreen extends StatelessWidget {
       itemBuilder: (context, index) {
         if (index == photos.length) {
           return GestureDetector(
-            onTap: () => context.read<ReportBloc>().add(AddPhoto()),
+            onTap: () => _showImageSourceDialog(context),
             child: Container(
               decoration: BoxDecoration(
-                color: Colors.grey[200],
-                borderRadius: BorderRadius.circular(8),
+                color: ColorPaletter.cardLight,
+                borderRadius: BorderRadius.circular(12),
               ),
-              child: const Icon(Icons.add_a_photo, color: Colors.grey),
+              child: const Icon(Icons.add_a_photo_outlined, color: ColorPaletter.textGrey),
             ),
           );
         }
         final photo = photos[index];
-        return Stack(
-          children: [
-            Image.file(photo, fit: BoxFit.cover, width: double.infinity, height: double.infinity),
-            Positioned(
-              right: 0,
-              top: 0,
-              child: GestureDetector(
-                onTap: () => context.read<ReportBloc>().add(RemovePhoto(photo)),
-                child: const CircleAvatar(
-                  radius: 12,
-                  backgroundColor: Colors.black54,
-                  child: Icon(Icons.close, color: Colors.white, size: 16),
+        return ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              Image.file(photo, fit: BoxFit.cover),
+              Positioned(
+                right: 4,
+                top: 4,
+                child: GestureDetector(
+                  onTap: () =>
+                      context.read<ReportBloc>().add(RemovePhoto(photo)),
+                  child: Container(
+                    decoration: const BoxDecoration(
+                        color: Colors.black54,
+                        shape: BoxShape.circle
+                    ),
+                    child: const Icon(Icons.close, color: Colors.white, size: 16),
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showImageSourceDialog(BuildContext outerContext) {
+    showDialog(
+      context: outerContext,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Text('Seleccionar fuente'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                leading: const Icon(Icons.camera_alt_outlined),
+                title: const Text('Tomar foto'),
+                onTap: () {
+                  Navigator.of(dialogContext).pop();
+                  outerContext
+                      .read<ReportBloc>()
+                      .add(AddPhoto(ImageSource.camera));
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_library_outlined),
+                title: const Text('Elegir de galería'),
+                onTap: () {
+                  Navigator.of(dialogContext).pop();
+                  outerContext
+                      .read<ReportBloc>()
+                      .add(AddPhoto(ImageSource.gallery));
+                },
+              ),
+            ],
+          ),
         );
       },
     );
