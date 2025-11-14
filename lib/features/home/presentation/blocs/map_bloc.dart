@@ -11,38 +11,54 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:citizen_mobile_app/features/onboarding/domain/repositories/onboarding_repository.dart';
 
 
 class MapBloc extends Bloc<MapEvent, MapState> {
   final HomeRepository homeRepository;
+  final OnboardingRepository onboardingRepository;
   Timer? _truckAnimationTimer;
   List<LatLng> _currentRoute = [];
   int _currentPointIndex = 0;
+  List<TrashContainer> _containers = [];
 
-  MapBloc({required this.homeRepository}) : super(MapInitial()) {
+  MapBloc({required this.homeRepository, required this.onboardingRepository}) : super(MapInitial()) {
     on<LoadMapAtCurrentLocation>(_onLoadMapAtCurrentLocation);
     on<AnimateTruckTick>(_onAnimateTruckTick);
+    on<ContainerTapped>(_onContainerTapped);
+    on<ClearNavigation>(_onClearNavigation);
   }
 
   Future<void> _onLoadMapAtCurrentLocation(
       LoadMapAtCurrentLocation event, Emitter<MapState> emit) async {
     emit(MapLoading());
     try {
-      final permissionStatus = await Permission.location.request();
-      if (!permissionStatus.isGranted) {
-        emit(MapError("El permiso de ubicación es necesario para usar el mapa."));
+      // Use default Lima location instead of requesting GPS permission
+      final userLocation = const LatLng(-12.0464, -77.0428); // Lima, Peru
+
+      // --- PASO 1: OBTENER MUNICIPALIDAD GUARDADA ---
+      final municipality = await onboardingRepository.getSavedMunicipality();
+
+      if (municipality == null) {
+        emit(MapError("No se encontró municipalidad seleccionada."));
         return;
       }
+      final String districtId = municipality.id;
+      // ----------------------------------------------
 
-      final position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-      );
-      final userLocation = LatLng(position.latitude, position.longitude);
+      print('DEBUG: About to call getTrashContainers');
+      // --- PASO 2: USAR EL ID CORRECTO ---
+      final containers = await homeRepository.getTrashContainers(districtId);
+      // -------------------------------------
+      print('DEBUG: Got ${containers.length} containers');
+      _containers = containers;
+      // --- PASO 3: USAR EL ID CORRECTO TAMBIÉN AQUÍ ---
+      _currentRoute = await homeRepository.getCollectionTruckRoute(districtId);
+      // ---------------------------------------------
 
-      final containers = await homeRepository.getTrashContainers("La Victoria");
-      _currentRoute = await homeRepository.getCollectionTruckRoute("La Victoria");
-
+      print('DEBUG: Creating markers for ${containers.length} containers');
       final markers = await _createMarkers(containers);
+      print('DEBUG: Created ${markers.length} markers');
       final polylines = _createPolylines(_currentRoute);
 
       emit(MapLoaded(
@@ -53,11 +69,13 @@ class MapBloc extends Bloc<MapEvent, MapState> {
           target: userLocation,
           zoom: 15,
         ),
+        containers: containers,
       ));
 
       _startTruckAnimation();
     } catch (e) {
-      emit(MapError("No se pudo obtener la ubicación o cargar los datos del mapa."));
+      print('DEBUG: Exception in _onLoadMapAtCurrentLocation: $e');
+      emit(MapError("No se pudo cargar los datos del mapa."));
     }
   }
 
@@ -85,6 +103,26 @@ class MapBloc extends Bloc<MapEvent, MapState> {
     }
   }
 
+  void _onContainerTapped(ContainerTapped event, Emitter<MapState> emit) {
+    final currentState = state;
+    if (currentState is MapLoaded) {
+      try {
+        final container = currentState.containers.firstWhere((c) => c.id == event.containerId);
+        emit(currentState.copyWith(navigateToContainerDetail: container));
+      } catch (e) {
+        // Opcional: manejar el error si no se encuentra el contenedor
+        print("Error: Contenedor no encontrado - ${e.toString()}");
+      }
+    }
+  }
+
+  void _onClearNavigation(ClearNavigation event, Emitter<MapState> emit) {
+    final currentState = state;
+    if (currentState is MapLoaded) {
+      emit(currentState.copyWith(clearNavigation: true));
+    }
+  }
+
   Set<Polyline> _createPolylines(List<LatLng> route) {
     return {
       Polyline(
@@ -107,6 +145,7 @@ class MapBloc extends Bloc<MapEvent, MapState> {
           position: container.position,
           icon: icon,
           onTap: () {
+            add(ContainerTapped(container.id));
           },
         ),
       );

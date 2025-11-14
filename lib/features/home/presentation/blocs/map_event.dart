@@ -8,3 +8,10 @@ class LoadMapData extends MapEvent {
 class LoadMapAtCurrentLocation extends MapEvent {}
 
 class AnimateTruckTick extends MapEvent {}
+
+class ContainerTapped extends MapEvent {
+  final String containerId;
+  ContainerTapped(this.containerId);
+}
+
+class ClearNavigation extends MapEvent {}

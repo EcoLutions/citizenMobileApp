@@ -16,7 +16,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
 
   Future<void> _onLoadHomeData(LoadHomeData event, Emitter<HomeState> emit) async {
     final municipality = await onboardingRepository.getSavedMunicipality();
-    emit(state.copyWith(municipalityName: municipality ?? "Not selected"));
+    emit(state.copyWith(municipalityName: municipality?.name ?? "Not selected"));
   }
 
   void _onNavigate(Navigate event, Emitter<HomeState> emit) {
