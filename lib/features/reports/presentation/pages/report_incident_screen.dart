@@ -62,17 +62,14 @@ class ReportIncidentScreen extends StatelessWidget {
                     Text('Descripción',
                         style: Theme.of(context).textTheme.headlineMedium),
                     const SizedBox(height: 16),
-                    TextField(
-                      controller:
-                      TextEditingController(text: state.description),
+                    TextFormField(
+                      initialValue: state.description,
                       decoration: const InputDecoration(
                         hintText: 'Describe el problema...',
                       ),
                       maxLines: 4,
                       onChanged: (value) {
-                        context
-                            .read<ReportBloc>()
-                            .add(DescriptionChanged(value));
+                        context.read<ReportBloc>().add(DescriptionChanged(value));
                       },
                     ),
                     const SizedBox(height: 24),
