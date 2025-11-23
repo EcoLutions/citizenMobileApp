@@ -3,6 +3,7 @@ import 'package:citizen_mobile_app/features/reports/domain/entities/report_type.
 
 class IncidentReport extends Equatable {
   final String citizenId;
+  final String districtId;
   final double latitude;
   final double longitude;
   final String? containerId;
@@ -12,6 +13,7 @@ class IncidentReport extends Equatable {
 
   const IncidentReport({
     required this.citizenId,
+    required this.districtId,
     required this.latitude,
     required this.longitude,
     this.containerId,
@@ -23,6 +25,7 @@ class IncidentReport extends Equatable {
   @override
   List<Object?> get props => [
         citizenId,
+        districtId,
         latitude,
         longitude,
         containerId,

@@ -84,6 +84,15 @@ class ReportBloc extends Bloc<ReportEvent, ReportState> {
         ));
         return;
       }
+      //Get current user district ID from auth
+      final districtId = await _getCurrentUserDistrictId();
+      if (districtId == null) {
+        emit(state.copyWith(
+          status: ReportStatus.error,
+          errorMessage: "Usuario no autenticado.",
+        ));
+        return;
+      }
 
       // Upload evidences first
       final evidenceIds = <String>[];
@@ -100,6 +109,7 @@ class ReportBloc extends Bloc<ReportEvent, ReportState> {
       // Create and submit report
       final report = IncidentReport(
         citizenId: userId,
+        districtId: districtId,
         latitude: state.latitude!,
         longitude: state.longitude!,
         reportType: state.type,
@@ -128,4 +138,14 @@ class ReportBloc extends Bloc<ReportEvent, ReportState> {
     }
     return citizenId;
   }
+
+  Future<String?> _getCurrentUserDistrictId() async {
+    // Get district ID from local storage
+    final districtId = await authLocalDataSource.getCitizenDistrictId();
+    if (districtId == null || districtId.isEmpty) {
+      throw Exception('District ID not found. Please log in again.');
+    }
+    return districtId;
+  }
+
 }

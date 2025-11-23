@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:citizen_mobile_app/core/di/injection_container.dart' as di;
 import 'package:citizen_mobile_app/features/auth/data/datasource/auth_local_data_source.dart';
@@ -34,6 +35,7 @@ class CitizenBloc extends Bloc<CitizenEvent, CitizenState> {
       // Save citizen ID for reports
       final authLocalDataSource = di.sl<AuthLocalDataSource>();
       await authLocalDataSource.saveCitizenId(citizen.id);
+      await authLocalDataSource.saveCitizenDistrictId(citizen.districtId);
       emit(CitizenCreated(citizen));
     } catch (e) {
       emit(CitizenError(e.toString()));

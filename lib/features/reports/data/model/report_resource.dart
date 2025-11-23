@@ -1,6 +1,7 @@
 class ReportResource {
   final String id;
   final String citizenId;
+  final String districtId;
   final String latitude;
   final String longitude;
   final String? address;
@@ -20,6 +21,7 @@ class ReportResource {
   const ReportResource({
     required this.id,
     required this.citizenId,
+    required this.districtId,
     required this.latitude,
     required this.longitude,
     required this.address,
@@ -41,6 +43,7 @@ class ReportResource {
     return ReportResource(
       id: json['id'] as String,
       citizenId: json['citizenId'] as String,
+      districtId: json['districtId'] as String,
       latitude: json['latitude'] as String,
       longitude: json['longitude'] as String,
       address: json['address'] as String?,
@@ -63,6 +66,7 @@ class ReportResource {
     return {
       'id': id,
       'citizenId': citizenId,
+      'districtId': districtId,
       'latitude': latitude,
       'longitude': longitude,
       'address': address,

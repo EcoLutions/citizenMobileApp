@@ -17,6 +17,8 @@ abstract class AuthRepository {
   Future<String?> getUserId();
   Future<void> saveCitizenId(String citizenId);
   Future<String?> getCitizenId();
+  Future<void> saveCitizenDistrictId(String districtId);
+  Future<String?> getCitizenDistrictId();
   Future<void> deleteCitizenId();
   Future<void> deleteToken();
   Future<void> deleteUserId();

@@ -44,6 +44,7 @@ class ReportsRemoteDataSourceImpl implements ReportsRemoteDataSource {
       },
       body: json.encode({
         'citizenId': report.citizenId,
+        'districtId': report.districtId,
         'latitude': report.latitude.toString(),
         'longitude': report.longitude.toString(),
         'containerId': report.containerId,

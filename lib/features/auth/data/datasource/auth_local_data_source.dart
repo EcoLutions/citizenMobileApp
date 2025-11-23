@@ -11,6 +11,8 @@ abstract class AuthLocalDataSource {
   Future<String?> getUserId();
   Future<void> saveCitizenId(String citizenId);
   Future<String?> getCitizenId();
+  Future<void> saveCitizenDistrictId(String districtId);
+  Future<String?> getCitizenDistrictId();
   Future<void> deleteCitizenId();
 }
 
@@ -19,6 +21,7 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
   static const String _tokenKey = 'auth_token';
   static const String _userIdKey = 'auth_user_id';
   static const String _citizenIdKey = 'auth_citizen_id';
+  static const String _citizenDistrictIdKey = 'auth_citizen_district_id';
   static const String _citizenProfileKey = 'citizen_profile';
 
   AuthLocalDataSourceImpl({required this.sharedPreferences});
@@ -72,6 +75,16 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
   @override
   Future<String?> getCitizenId() async {
     return sharedPreferences.getString(_citizenIdKey);
+  }
+
+  @override
+  Future<void> saveCitizenDistrictId(String districtId) async {
+    await sharedPreferences.setString(_citizenDistrictIdKey, districtId);
+  }
+
+  @override
+  Future<String?> getCitizenDistrictId() async {
+    return sharedPreferences.getString(_citizenDistrictIdKey);
   }
 
   @override

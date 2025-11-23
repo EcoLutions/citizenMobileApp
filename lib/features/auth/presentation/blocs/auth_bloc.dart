@@ -42,6 +42,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
               await sharedPreferences.setString(
                   'citizen_profile', jsonEncode(citizen.toJson()));
               await repository.saveCitizenId(citizen.id);
+              await repository.saveCitizenDistrictId(citizen.districtId);
               final municipalities = await onboardingRepository.getMunicipalities('');
               final municipality = municipalities.firstWhere(
                     (m) => m.id == citizen.districtId,
@@ -83,6 +84,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
               'citizen_profile', jsonEncode(citizen.toJson()));
           // Save citizen ID for reports
           await repository.saveCitizenId(citizen.id);
+          await repository.saveCitizenDistrictId(citizen.districtId);
           final municipalities = await onboardingRepository.getMunicipalities('');
           final municipality = municipalities.firstWhere(
                 (m) => m.id == citizen.districtId,

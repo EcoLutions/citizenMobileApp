@@ -92,6 +92,16 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
+  Future<void> saveCitizenDistrictId(String districtId) async {
+    await localDataSource.saveCitizenDistrictId(districtId);
+  }
+
+  @override
+  Future<String?> getCitizenDistrictId() async {
+    return await localDataSource.getCitizenDistrictId();
+  }
+
+  @override
   Future<void> deleteCitizenId() async {
     await localDataSource.deleteCitizenId();
   }
