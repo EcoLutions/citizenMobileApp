@@ -88,6 +88,9 @@ class ReportsRemoteDataSourceImpl implements ReportsRemoteDataSource {
     final streamedResponse = await request.send();
     final response = await http.Response.fromStream(streamedResponse);
 
+    print('uploadEvidence status: ${response.statusCode}');
+    print('uploadEvidence body: ${response.body}');
+
     if (response.statusCode == 201) {
       final jsonResponse = json.decode(response.body) as Map<String, dynamic>;
       return EvidenceResource.fromJson(jsonResponse);

@@ -2,7 +2,7 @@ class EvidenceResource {
   final String id;
   final String type;
   final String originalFileName;
-  final String fileUrl;
+  final String? fileUrl;
   final String? thumbnailUrl;
   final String? description;
   final int fileSize;
@@ -13,7 +13,7 @@ class EvidenceResource {
     required this.id,
     required this.type,
     required this.originalFileName,
-    required this.fileUrl,
+    this.fileUrl,
     this.thumbnailUrl,
     this.description,
     required this.fileSize,
@@ -26,7 +26,7 @@ class EvidenceResource {
       id: json['id'] as String,
       type: json['type'] as String,
       originalFileName: json['originalFileName'] as String,
-      fileUrl: json['fileUrl'] as String,
+      fileUrl: json['fileUrl'] as String?,
       thumbnailUrl: json['thumbnailUrl'] as String?,
       description: json['description'] as String?,
       fileSize: json['fileSize'] as int,
