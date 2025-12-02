@@ -33,40 +33,32 @@ class MapBloc extends Bloc<MapEvent, MapState> {
       LoadMapAtCurrentLocation event, Emitter<MapState> emit) async {
     emit(MapLoading());
     try {
-      // Use default Lima location instead of requesting GPS permission
-      final userLocation = const LatLng(-12.0464, -77.0428); // Lima, Peru
+      // Ubicación por defecto (Lima) por si falla todo
+      LatLng centerLocation = const LatLng(-12.0464, -77.0428);
 
-      // --- PASO 1: OBTENER MUNICIPALIDAD GUARDADA ---
       final municipality = await onboardingRepository.getSavedMunicipality();
+      final String districtId = municipality?.id ?? "default";
 
-      if (municipality == null) {
-        emit(MapError("No se encontró municipalidad seleccionada."));
-        return;
-      }
-      final String districtId = municipality.id;
-      // ----------------------------------------------
-
-      print('DEBUG: About to call getTrashContainers');
-      // --- PASO 2: USAR EL ID CORRECTO ---
+      // Llamamos a la API
       final containers = await homeRepository.getTrashContainers(districtId);
-      // -------------------------------------
-      print('DEBUG: Got ${containers.length} containers');
       _containers = containers;
-      // --- PASO 3: USAR EL ID CORRECTO TAMBIÉN AQUÍ ---
       _currentRoute = await homeRepository.getCollectionTruckRoute(districtId);
-      // ---------------------------------------------
 
-      print('DEBUG: Creating markers for ${containers.length} containers');
+      // CORRECCIÓN CLAVE: Si hay contenedores, centramos el mapa en el primero
+      if (containers.isNotEmpty) {
+        print("DEBUG: Centering map on first container: ${containers.first.position}");
+        centerLocation = containers.first.position;
+      }
+
       final markers = await _createMarkers(containers);
-      print('DEBUG: Created ${markers.length} markers');
       final polylines = _createPolylines(_currentRoute);
 
       emit(MapLoaded(
         markers: markers,
         polylines: polylines,
-        truckPosition: _currentRoute.isNotEmpty ? _currentRoute.first : userLocation,
+        truckPosition: _currentRoute.isNotEmpty ? _currentRoute.first : centerLocation,
         initialCameraPosition: CameraPosition(
-          target: userLocation,
+          target: centerLocation, // Usamos la ubicación calculada
           zoom: 15,
         ),
         containers: containers,
@@ -74,7 +66,7 @@ class MapBloc extends Bloc<MapEvent, MapState> {
 
       _startTruckAnimation();
     } catch (e) {
-      print('DEBUG: Exception in _onLoadMapAtCurrentLocation: $e');
+      print('DEBUG: Error en MapBloc: $e');
       emit(MapError("No se pudo cargar los datos del mapa."));
     }
   }

@@ -18,10 +18,11 @@ class HomeRepositoryImpl implements HomeRepository {
   @override
   Future<List<TrashContainer>> getTrashContainers(String municipalityId) async {
     try {
-      final url = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.containersEndpoint}/$municipalityId');
-      print('DEBUG: Calling containers API: $url');
+      final url = Uri.parse('${ApiConstants.baseUrl}${ApiConstants.containersByDistrictIdEndpoint}/$municipalityId');
+
       final token = await _getToken();
       print('DEBUG: Token: $token');
+      print('DEBUG: Calling API: $url');
 
       if (token == null || token.isEmpty) {
         print('DEBUG: No token available, returning empty list');

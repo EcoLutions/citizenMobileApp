@@ -1,7 +1,7 @@
 class ApiConstants {
   static const String baseUrl = 'http://10.0.2.2:8080';
   static const String districtsEndpoint = '/api/v1/districts';
-  static const String containersEndpoint = '/api/v1/containers/district';
+  static const String containersByDistrictIdEndpoint = '/api/v1/containers/district';
   static const String routesEndpoint = '/api/v1/routes/district';
   static const String signUpEndpoint = '/api/v1/authentication/sign-up';
   static const String signInEndpoint = '/api/v1/authentication/sign-in';

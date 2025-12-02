@@ -8,11 +8,11 @@ class TrashContainer extends Equatable {
   final String latitude;
   final String longitude;
   final int volumeLiters;
-  final int maxWeightKg;
+  final int maxFillLevel;
   final String containerType;
   final String status;
   final int currentFillLevel;
-  final String sensorId;
+  final String deviceId;
   final String lastReadingTimestamp;
   final String districtId;
   final String lastCollectionDate;
@@ -25,11 +25,11 @@ class TrashContainer extends Equatable {
     required this.latitude,
     required this.longitude,
     required this.volumeLiters,
-    required this.maxWeightKg,
+    required this.maxFillLevel,
     required this.containerType,
     required this.status,
     required this.currentFillLevel,
-    required this.sensorId,
+    required this.deviceId,
     required this.lastReadingTimestamp,
     required this.districtId,
     required this.lastCollectionDate,
@@ -58,17 +58,17 @@ class TrashContainer extends Equatable {
       latitude: json['latitude'] as String,
       longitude: json['longitude'] as String,
       volumeLiters: json['volumeLiters'] as int,
-      maxWeightKg: json['maxWeightKg'] as int,
+      maxFillLevel: json['maxFillLevel'] as int,
       containerType: json['containerType'] as String,
       status: json['status'] as String,
       currentFillLevel: json['currentFillLevel'] as int,
-      sensorId: json['sensorId'] as String,
+      deviceId: json['deviceId'] as String? ?? '',
       lastReadingTimestamp: json['lastReadingTimestamp'] as String? ?? '',
-      districtId: json['districtId'] as String,
+      districtId: json['districtId'] as String? ?? '',
       lastCollectionDate: json['lastCollectionDate'] as String? ?? '',
       collectionFrequencyDays: json['collectionFrequencyDays'] as int,
-      createdAt: json['createdAt'] as String,
-      updatedAt: json['updatedAt'] as String,
+      createdAt: json['createdAt'] as String? ?? '',
+      updatedAt: json['updatedAt'] as String? ?? '',
     );
   }
 
@@ -78,11 +78,11 @@ class TrashContainer extends Equatable {
         latitude,
         longitude,
         volumeLiters,
-        maxWeightKg,
+        maxFillLevel,
         containerType,
         status,
         currentFillLevel,
-        sensorId,
+        deviceId,
         lastReadingTimestamp,
         districtId,
         lastCollectionDate,
